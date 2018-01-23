@@ -17,13 +17,21 @@
         NSString *uuidUserDefaults = [defaults objectForKey:@"uuid"];
         
         NSString *uuid = [UICKeyChainStore stringForKey:@"uuid"];
+        if ( [uuid length] == 0 ) {
+            uuid = nil;
+            uuidUserDefaults = nil;
+        }
+        
+        if ( [uuidUserDefaults length] == 0 ) {
+            uuidUserDefaults = nil;
+        }
 
-        if ( uuid && !uuidUserDefaults) {
+        if ( uuid && !uuidUserDefaults ) {
             [defaults setObject:uuid forKey:@"uuid"];
             [defaults synchronize];
             
         }  else if ( !uuid && !uuidUserDefaults ) {
-            NSString *uuidString = [[NSUUID UUID] UUIDString];
+            NSString *uuidString = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
             
             [UICKeyChainStore setString:uuidString forKey:@"uuid"];
             
