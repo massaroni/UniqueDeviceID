@@ -5,6 +5,7 @@ import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CordovaWebView;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.Manifest;
 import android.content.Context;
@@ -58,31 +59,45 @@ public class UniqueDeviceID extends CordovaPlugin {
             TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
 
             String uuid;
-            String androidID = Secure.getString(context.getContentResolver(), Secure.ANDROID_ID);
             String deviceID = tm.getDeviceId();
-            String simID = tm.getSimSerialNumber();
+            final JSONObject ids = new JSONObject();
 
-            if ("9774d56d682e549c".equals(androidID) || androidID == null) {
+            String androidID = Secure.getString(context.getContentResolver(), Secure.ANDROID_ID);
+            if ("9774d56d682e549c".equals(androidID) || isBlank(androidID)) {
                 androidID = "";
+            } else {
+                ids.put("androidID", androidID);
             }
 
-            if (deviceID == null) {
-                deviceID = "";
+            String simID = tm.getSimSerialNumber();
+            if (!isBlank(simID)) {
+                ids.put("simSerial", simID);
             }
 
-            if (simID == null) {
-                simID = "";
+            final String meid = tm.getMeid();
+            if (!isBlank(meid)) {
+                ids.put("meid", meid);
+            }
+
+            final String imei = tm.getImei();
+            if (!isBlank(imei)) {
+                ids.put("imei", imei);
             }
 
             uuid = androidID + deviceID + simID;
             uuid = String.format("%32s", uuid).replace(' ', '0');
             uuid = uuid.substring(0, 32);
             uuid = uuid.replaceAll("(\\w{8})(\\w{4})(\\w{4})(\\w{4})(\\w{12})", "$1-$2-$3-$4-$5");
+            ids.put("uuid", uuid);
 
-            this.callbackContext.success(uuid);
+            this.callbackContext.success(ids);
         }catch(Exception e ) {
             this.callbackContext.error("Exception occurred: ".concat(e.getMessage()));
         }
+    }
+
+    private static boolean isBlank(final String s) {
+        return s == null || s.trim().length() < 1;
     }
 
     private boolean hasPermission(String permission) throws Exception{
