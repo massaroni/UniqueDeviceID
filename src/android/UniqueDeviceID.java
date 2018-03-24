@@ -84,6 +84,11 @@ public class UniqueDeviceID extends CordovaPlugin {
                 ids.put("imei", imei);
             }
 
+            final String phoneNumber = tm.getLine1Number();
+            if (!isBlank(phoneNumber)) {
+                ids.put("phoneNumber", phoneNumber);
+            }
+
             uuid = androidID + deviceID + simID;
             uuid = String.format("%32s", uuid).replace(' ', '0');
             uuid = uuid.substring(0, 32);
